@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.4.2',
+    sidebar: {"position":"always","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="常用POSIX数据类型   数据类型 说明 头文件     int8_t 带符号的8位整数 &amp;lt;sys/types.h&amp;gt;   uint8_t 无符号的8位整数 &amp;lt;sys/types.h&amp;gt;   int16_t 带符号的16位整数 &amp;lt;sys/types.h&amp;gt;   uint16_t 无符号的16位整数 &amp;lt;sys/types.h&amp;gt;   int32_t 带符号的">
+<meta name="keywords" content="Unix,网络编程,套接字">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Unix套接字编程总结">
+<meta property="og:url" content="http://blog.bitinit.site/2018/12/26/Unix套接字编程总结/index.html">
+<meta property="og:site_name" content="John&#39;s Blog">
+<meta property="og:description" content="常用POSIX数据类型   数据类型 说明 头文件     int8_t 带符号的8位整数 &amp;lt;sys/types.h&amp;gt;   uint8_t 无符号的8位整数 &amp;lt;sys/types.h&amp;gt;   int16_t 带符号的16位整数 &amp;lt;sys/types.h&amp;gt;   uint16_t 无符号的16位整数 &amp;lt;sys/types.h&amp;gt;   int32_t 带符号的">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-08-09T12:40:51.687Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Unix套接字编程总结">
+<meta name="twitter:description" content="常用POSIX数据类型   数据类型 说明 头文件     int8_t 带符号的8位整数 &amp;lt;sys/types.h&amp;gt;   uint8_t 无符号的8位整数 &amp;lt;sys/types.h&amp;gt;   int16_t 带符号的16位整数 &amp;lt;sys/types.h&amp;gt;   uint16_t 无符号的16位整数 &amp;lt;sys/types.h&amp;gt;   int32_t 带符号的">
+
+
+
+
+
+
+  <link rel="canonical" href="http://blog.bitinit.site/2018/12/26/Unix套接字编程总结/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Unix套接字编程总结 | John's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-always page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">John's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2018/12/26/Unix套接字编程总结/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Wang">
+      <meta itemprop="description" content="Stay hungry, Stay foolish.">
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="John's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Unix套接字编程总结
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-26 09:54:52" itemprop="dateCreated datePublished" datetime="2018-12-26T09:54:52+08:00">2018-12-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-08-09 20:40:51" itemprop="dateModified" datetime="2019-08-09T20:40:51+08:00">2019-08-09</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/网络/" itemprop="url" rel="index"><span itemprop="name">网络</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="常用POSIX数据类型"><a href="#常用POSIX数据类型" class="headerlink" title="常用POSIX数据类型"></a>常用POSIX数据类型</h2><table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>说明</th>
+<th>头文件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>int8_t</td>
+<td>带符号的8位整数</td>
+<td><code>&lt;sys/types.h&gt;</code></td>
+</tr>
+<tr>
+<td>uint8_t</td>
+<td>无符号的8位整数</td>
+<td><code>&lt;sys/types.h&gt;</code></td>
+</tr>
+<tr>
+<td>int16_t</td>
+<td>带符号的16位整数</td>
+<td><code>&lt;sys/types.h&gt;</code></td>
+</tr>
+<tr>
+<td>uint16_t</td>
+<td>无符号的16位整数</td>
+<td><code>&lt;sys/types.h&gt;</code></td>
+</tr>
+<tr>
+<td>int32_t</td>
+<td>带符号的32位整数</td>
+<td><code>&lt;sys/types.h&gt;</code></td>
+</tr>
+<tr>
+<td>uint32_t</td>
+<td>无符号的32位整数</td>
+<td><code>&lt;sys/types.h&gt;</code></td>
+</tr>
+<tr>
+<td>sa_family_t</td>
+<td>套接字地址结构的地址族，可以是任何无符号整型</td>
+<td><code>&lt;sys/socket.h&gt;</code></td>
+</tr>
+<tr>
+<td>socklen_t</td>
+<td>套接字地址结构的长度，一般为uint32_t</td>
+<td><code>&lt;sys/socket.h&gt;</code></td>
+</tr>
+<tr>
+<td>in_addr_t</td>
+<td>IPv4地址，一般为uint32_t</td>
+<td><code>&lt;netinet/in.h&gt;</code></td>
+</tr>
+<tr>
+<td>in_port_t</td>
+<td>TCP或UDP端口，一般为uint16_t</td>
+<td><code>&lt;netinet/in.h&gt;</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="套接字地址结构"><a href="#套接字地址结构" class="headerlink" title="套接字地址结构"></a>套接字地址结构</h2><h3 id="IPv4套接字结构"><a href="#IPv4套接字结构" class="headerlink" title="IPv4套接字结构"></a>IPv4套接字结构</h3><p>IPv4的地址结构是<code>struct sockaddr_in</code>，定义在<code>&lt;netinet/in.h&gt;</code>头文件中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> &#123;</span></span><br><span class="line">	<span class="keyword">in_addr_t</span> s_addr;	<span class="comment">/* 32bit IPv4地址 */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span>&#123;</span></span><br><span class="line">	<span class="keyword">unit8_t</span> sin_len;	<span class="comment">/* 这个结构体长度，16字节 */</span></span><br><span class="line">	<span class="keyword">sa_family_t</span> sin_family;	<span class="comment">/* AF_INET */</span></span><br><span class="line">	<span class="keyword">in_port_t</span> sin_port;	<span class="comment">/* 16bit TCP 或 UDP 端口值 */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">in_addr</span> <span class="title">sin_addr</span>;</span> <span class="comment">/* 之所以用了结构体是因为以前对IP地址进行了A、B...分类处理 */</span></span><br><span class="line">	<span class="keyword">char</span> sin_zero[<span class="number">8</span>];	<span class="comment">/* 未使用 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>POSIX规范只需要结构中的3个字段：<code>sin_family</code>、<code>sin_addr</code>和<code>sin_port</code>。</p>
+<p>良好的习惯是在使用<code>struct sockaddr_in</code>之前将整个结构置为0。</p>
+<h3 id="通用套接字结构"><a href="#通用套接字结构" class="headerlink" title="通用套接字结构"></a>通用套接字结构</h3><p><code>&lt;sys/socket.h&gt;</code>头文件中定义通用套接字结构地址：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr</span> &#123;</span></span><br><span class="line">	<span class="keyword">unit8_t</span> sa_len;</span><br><span class="line">	<span class="keyword">sa_family_t</span> sa_family;	<span class="comment">/* 套接字地址：AF_XXX */</span></span><br><span class="line">	<span class="keyword">char</span> sa_data[<span class="number">14</span>];	<span class="comment">/* 2字节端口号 + 4字节的IPv4地址 + 8字节的sin_zero数据 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>案例：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">serv</span>;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* fill in serv&#123;&#125; */</span></span><br><span class="line"></span><br><span class="line">bind(sockfd, (struct sockaddr *)&amp;serv, <span class="keyword">sizeof</span>(serv));</span><br></pre></td></tr></table></figure>
+<h3 id="IPv6套接字结构"><a href="#IPv6套接字结构" class="headerlink" title="IPv6套接字结构"></a>IPv6套接字结构</h3><p>IPv6结构是<code>struct sockaddr_in6</code>，定义在<code>&lt;netinet/in.h&gt;</code>头文件中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">in6_addr</span>&#123;</span></span><br><span class="line">	<span class="keyword">uint8_t</span> s6_addr[<span class="number">16</span>]; <span class="comment">/* 128bit */</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in6</span> &#123;</span></span><br><span class="line">	<span class="keyword">uint8_t</span> sin6_len; <span class="comment">/* 这个结构体长度，28字节 */</span></span><br><span class="line">	<span class="keyword">sa_family_t</span> sin6_family; <span class="comment">/* AF_INET6 */</span></span><br><span class="line">	<span class="keyword">in_port_t</span> sin6_port;</span><br><span class="line">	<span class="keyword">unit32_t</span> sin6_flowinfo; <span class="comment">/* flow information, undefined */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">in6_addr</span> <span class="title">sin6_addr</span>;</span> </span><br><span class="line">	<span class="keyword">uint32_t</span> sin6_scope_id;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="新的通用套接字结构"><a href="#新的通用套接字结构" class="headerlink" title="新的通用套接字结构"></a>新的通用套接字结构</h3><p><code>struct sockaddr_storage</code>定义在<code>&lt;netinet/in.h&gt;</code>中：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_storage</span> &#123;</span></span><br><span class="line">	<span class="keyword">unit8_t</span> ss_len;</span><br><span class="line">	<span class="keyword">sa_family_t</span> ss_family;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/* 用户透明 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>struct sockaddr_storage</code>能够容纳系统所支持的任何套接字地址结构。</p>
+<h2 id="字节序"><a href="#字节序" class="headerlink" title="字节序"></a>字节序</h2><p>网络协议使用<strong>大端字节序</strong>传输数据。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;  /* 下面4个操作定义在 &lt;netinet/in.h&gt; 中 */</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">uint16_t</span> htons(<span class="keyword">uint16_t</span> host16bitvalue);</span><br><span class="line"><span class="keyword">uint32_t</span> htonl(<span class="keyword">uint32_t</span> host32bitvalue);  <span class="comment">/* 主机字节序转网络字节序 */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">uint16_t</span> ntohs(<span class="keyword">uint16_t</span> net16bitvalue);</span><br><span class="line"><span class="keyword">uint32_t</span> ntohl(<span class="keyword">uint32_t</span> net32bitvalue);  <span class="comment">/* 网络字节序转主机字节序 */</span></span><br></pre></td></tr></table></figure>
+<p>h表示host，n表示net，s表示short，l表示long。</p>
+<h2 id="字节操作函数"><a href="#字节操作函数" class="headerlink" title="字节操作函数"></a>字节操作函数</h2><p>有两组操作字节的函数，它们不对数据做解释，也不假设数据是以空字符结束的字符串。</p>
+<p>名字以b开头的一组函数起源于4.2BSD：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;strings.h&gt;  /* 注意：这儿是strings.h而不是string.h */</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bzero</span><span class="params">(<span class="keyword">void</span> *dst, <span class="keyword">size_t</span> nbytes)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bcopy</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *src, <span class="keyword">void</span> *dst, <span class="keyword">size_t</span> nbytes)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bcmp</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *ptr1, <span class="keyword">const</span> <span class="keyword">void</span> *ptr2, <span class="keyword">size_t</span> nbytes)</span></span>; <span class="comment">/* unsigned char 前提下比较 */</span></span><br></pre></td></tr></table></figure>
+<p>名字以mem开头的一组函数起源于ANSI C标准：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;  /* 注意：这儿是string.h而不是strings.h */</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">memset</span><span class="params">(<span class="keyword">void</span> *dst, <span class="keyword">int</span> c, <span class="keyword">size_t</span> len)</span></span>; <span class="comment">/* 把目标置为 c */</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="title">memcpy</span><span class="params">(<span class="keyword">void</span> *dst, <span class="keyword">const</span> <span class="keyword">void</span> *src, <span class="keyword">size_t</span> nbytes)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">memcmp</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *ptr1, <span class="keyword">const</span> <span class="keyword">void</span> *ptr2, <span class="keyword">size_t</span> nbytes)</span></span>; <span class="comment">/* unsigned char 前提下比较 */</span></span><br></pre></td></tr></table></figure>
+<h2 id="地址转换函数"><a href="#地址转换函数" class="headerlink" title="地址转换函数"></a>地址转换函数</h2><h3 id="只适用于IPv4"><a href="#只适用于IPv4" class="headerlink" title="只适用于IPv4"></a>只适用于IPv4</h3><p><code>inet_aton</code>, <code>inet_addr</code>和<code>inet_ntoa</code>只适用于IPv4进行点分十进制(例如：”206.168.112.96”)转换为网际地址和网际地址转换为点分十进制。函数定义在<code>&lt;arpa/inet.h&gt;</code>中。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">inet_aton</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *strptr, struct in_addr *addrptr)</span></span>; <span class="comment">/* 若字符串有效返回1，否则为0 */</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">in_addr_t</span> inet_addr(<span class="keyword">const</span> <span class="keyword">char</span> *strptr); <span class="comment">/* **已废弃**，若字符串有效返回32位网络IPv4地址，否则为INADDR_NONE */</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">inet_ntoa</span><span class="params">(struct in_addr inaddr)</span></span>; <span class="comment">/* 返回点分十进制字符串指针 */</span></span><br></pre></td></tr></table></figure>
+<h3 id="通用地址转换"><a href="#通用地址转换" class="headerlink" title="通用地址转换"></a>通用地址转换</h3><p><code>inet_pton</code>和<code>inet_ntop</code>对于IPv4和IPv6都适用，p(presentation)表示”表达”，n表示”数值”。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">inet_pton</span><span class="params">(<span class="keyword">int</span> family, <span class="keyword">const</span> <span class="keyword">char</span> *strptr, <span class="keyword">void</span> *addrptr)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">const</span> <span class="keyword">char</span> *<span class="title">inet_ntop</span><span class="params">(<span class="keyword">int</span> family, <span class="keyword">const</span> <span class="keyword">void</span> *addrptr, <span class="keyword">char</span> *strptr, <span class="keyword">size_t</span> n)</span></span>;</span><br></pre></td></tr></table></figure>
+<h2 id="套接字编程"><a href="#套接字编程" class="headerlink" title="套接字编程"></a>套接字编程</h2><h3 id="socket函数"><a href="#socket函数" class="headerlink" title="socket函数"></a>socket函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socket</span><span class="params">(<span class="keyword">int</span> family, <span class="keyword">int</span> type, <span class="keyword">int</span> protocol)</span></span>; <span class="comment">/* 若成功则为非负描述符，否则为-1 */</span></span><br></pre></td></tr></table></figure>
+<p><strong>family常值</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>family</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AF_INET</td>
+<td>IPv4协议</td>
+</tr>
+<tr>
+<td>AF_INET6</td>
+<td>IPv6协议</td>
+</tr>
+<tr>
+<td>AF_LOCAL</td>
+<td>Unix域协议</td>
+</tr>
+<tr>
+<td>AF_ROUTE</td>
+<td>路由套接字</td>
+</tr>
+<tr>
+<td>AF_KEY</td>
+<td>密钥套接字</td>
+</tr>
+</tbody>
+</table>
+<p><strong>type常值</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>type</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SOCK_STREAM</td>
+<td>字节流套接字</td>
+</tr>
+<tr>
+<td>SOCK_DGRAM</td>
+<td>数据报套接字</td>
+</tr>
+<tr>
+<td>SOCK_SEQPACKET</td>
+<td>有序分组套接字</td>
+</tr>
+<tr>
+<td>SOCK_RAW</td>
+<td>原始套接字</td>
+</tr>
+</tbody>
+</table>
+<h3 id="connect函数"><a href="#connect函数" class="headerlink" title="connect函数"></a>connect函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 若成功返回0，若失败返回-1 */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">connect</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> struct sockaddr *servaddr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="bind函数"><a href="#bind函数" class="headerlink" title="bind函数"></a>bind函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 若成功返回0，若失败返回-1 */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> struct sockaddr *myaddr, <span class="keyword">socklen_t</span> addrlen)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="listen函数"><a href="#listen函数" class="headerlink" title="listen函数"></a>listen函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 若成功返回0，若失败返回-1 */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">listen</span><span class="params">(<span class="keyword">int</span> sockfd, <span class="keyword">int</span> backlog)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="accept函数"><a href="#accept函数" class="headerlink" title="accept函数"></a>accept函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* 若成功返回非负描述符，若出错返回-1 */</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">(<span class="keyword">int</span> sockfd, struct sockaddr *cliaddr, <span class="keyword">socklen_t</span> *addrlen)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="close函数"><a href="#close函数" class="headerlink" title="close函数"></a>close函数</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line">close(<span class="keyword">int</span> sockfd); <span class="comment">/* 若成功返回0，若出错返回-1 */</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Unix/" rel="tag"># Unix</a>
+          
+            <a href="/tags/网络编程/" rel="tag"># 网络编程</a>
+          
+            <a href="/tags/套接字/" rel="tag"># 套接字</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/10/28/Preconditions/" rel="next" title="Preconditions">
+                <i class="fa fa-chevron-left"></i> Preconditions
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/23/HashMap的那些事/" rel="prev" title="HashMap的那些事">
+                HashMap的那些事 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4" alt="John Wang">
+            
+              <p class="site-author-name" itemprop="name">John Wang</p>
+              <p class="site-description motion-element" itemprop="description">Stay hungry, Stay foolish.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/BitInit" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:John.Wang.Bit@gmail.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#常用POSIX数据类型"><span class="nav-number">1.</span> <span class="nav-text">常用POSIX数据类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#套接字地址结构"><span class="nav-number">2.</span> <span class="nav-text">套接字地址结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IPv4套接字结构"><span class="nav-number">2.1.</span> <span class="nav-text">IPv4套接字结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通用套接字结构"><span class="nav-number">2.2.</span> <span class="nav-text">通用套接字结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IPv6套接字结构"><span class="nav-number">2.3.</span> <span class="nav-text">IPv6套接字结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#新的通用套接字结构"><span class="nav-number">2.4.</span> <span class="nav-text">新的通用套接字结构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字节序"><span class="nav-number">3.</span> <span class="nav-text">字节序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#字节操作函数"><span class="nav-number">4.</span> <span class="nav-text">字节操作函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#地址转换函数"><span class="nav-number">5.</span> <span class="nav-text">地址转换函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#只适用于IPv4"><span class="nav-number">5.1.</span> <span class="nav-text">只适用于IPv4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#通用地址转换"><span class="nav-number">5.2.</span> <span class="nav-text">通用地址转换</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#套接字编程"><span class="nav-number">6.</span> <span class="nav-text">套接字编程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#socket函数"><span class="nav-number">6.1.</span> <span class="nav-text">socket函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#connect函数"><span class="nav-number">6.2.</span> <span class="nav-text">connect函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind函数"><span class="nav-number">6.3.</span> <span class="nav-text">bind函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#listen函数"><span class="nav-number">6.4.</span> <span class="nav-text">listen函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#accept函数"><span class="nav-number">6.5.</span> <span class="nav-text">accept函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#close函数"><span class="nav-number">6.6.</span> <span class="nav-text">close函数</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Wang</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> 强力驱动 v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" rel="external nofollow" href="https://theme-next.org">NexT.Gemini</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.4.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
