@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=6.4.2" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.4.2">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.4.2">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.4.2" color="#222">
+
+
+
+
+
+
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '6.4.2',
+    sidebar: {"position":"always","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="众所周知，SLF4J是非常流行的Java日志规范框架，使用门面模式来抽象日志接口，未提供具体的接口实现，通常需要配合log4j、logback等日志框架来使用。本文主要是为了研究SLF4J的源码，来剖析SLF4J的实现原理。 文章以以下方式组织：  SLF4J使用样例，结合logback来介绍一些常见用法； 探究SLF4J抽象出来的几个主要接口及其实现原理； 结合SLF4J抽象出来的接口，实现一个">
+<meta name="keywords" content="SLF4J,源码分析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Slf4j源码分析">
+<meta property="og:url" content="https://blog.bitinit.site/2020/02/06/open-source/SLF4J分析/index.html">
+<meta property="og:site_name" content="John&#39;s Blog">
+<meta property="og:description" content="众所周知，SLF4J是非常流行的Java日志规范框架，使用门面模式来抽象日志接口，未提供具体的接口实现，通常需要配合log4j、logback等日志框架来使用。本文主要是为了研究SLF4J的源码，来剖析SLF4J的实现原理。 文章以以下方式组织：  SLF4J使用样例，结合logback来介绍一些常见用法； 探究SLF4J抽象出来的几个主要接口及其实现原理； 结合SLF4J抽象出来的接口，实现一个">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://image.55555.io/blog_slf4j_structure.png">
+<meta property="og:image" content="http://image.55555.io/blog_slf4j_api_structure.png">
+<meta property="og:image" content="http://image.55555.io/blog_slf4j_SimpleLogger.png">
+<meta property="og:image" content="http://image.55555.io/blog_slf4j_adapter.png">
+<meta property="og:image" content="http://image.55555.io/blog_slf4j_log4j_adapter.png">
+<meta property="og:updated_time" content="2020-02-07T06:25:43.886Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Slf4j源码分析">
+<meta name="twitter:description" content="众所周知，SLF4J是非常流行的Java日志规范框架，使用门面模式来抽象日志接口，未提供具体的接口实现，通常需要配合log4j、logback等日志框架来使用。本文主要是为了研究SLF4J的源码，来剖析SLF4J的实现原理。 文章以以下方式组织：  SLF4J使用样例，结合logback来介绍一些常见用法； 探究SLF4J抽象出来的几个主要接口及其实现原理； 结合SLF4J抽象出来的接口，实现一个">
+<meta name="twitter:image" content="http://image.55555.io/blog_slf4j_structure.png">
+
+
+
+
+
+
+  <link rel="canonical" href="https://blog.bitinit.site/2020/02/06/open-source/SLF4J分析/">
+
+
+
+<script type="text/javascript" id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Slf4j源码分析 | John's Blog</title>
+  
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style type="text/css">
+    .use-motion .motion-element,
+    .use-motion .brand,
+    .use-motion .menu-item,
+    .sidebar-inner,
+    .use-motion .post-block,
+    .use-motion .pagination,
+    .use-motion .comments,
+    .use-motion .post-header,
+    .use-motion .post-body,
+    .use-motion .collection-title { opacity: initial; }
+
+    .use-motion .logo,
+    .use-motion .site-title,
+    .use-motion .site-subtitle {
+      opacity: initial;
+      top: initial;
+    }
+
+    .use-motion {
+      .logo-line-before i { left: initial; }
+      .logo-line-after i { right: initial; }
+    }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-always page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">John's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+    <a href="/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+    <a href="/categories/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+    <a href="/tags/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+    <a href="/archives/" rel="section">
+      <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2020/02/06/open-source/SLF4J分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Wang">
+      <meta itemprop="description" content="Stay hungry, Stay foolish.">
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="John's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Slf4j源码分析
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-06 16:53:45" itemprop="dateCreated datePublished" datetime="2020-02-06T16:53:45+08:00">2020-02-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-02-07 14:25:43" itemprop="dateModified" datetime="2020-02-07T14:25:43+08:00">2020-02-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/源码分析/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>众所周知，SLF4J是非常流行的Java日志规范框架，使用门面模式来抽象日志接口，未提供具体的接口实现，通常需要配合log4j、logback等日志框架来使用。本文主要是为了研究SLF4J的源码，来剖析SLF4J的实现原理。</p>
+<p>文章以以下方式组织：</p>
+<ol>
+<li>SLF4J使用样例，结合logback来介绍一些常见用法；</li>
+<li>探究SLF4J抽象出来的几个主要接口及其实现原理；</li>
+<li>结合SLF4J抽象出来的接口，实现一个简单的日志框架（这里以<code>slf4j-simple</code>为例）；</li>
+<li>对于log4j框架，SLF4J需要一个适配层来使用log4j，探究该适配层如何实现。</li>
+</ol>
+<h2 id="SLF4J常见用法"><a href="#SLF4J常见用法" class="headerlink" title="SLF4J常见用法"></a>SLF4J常见用法</h2><p>在SLF4J中，将日志分为5个等级：<code>error</code>，<code>warn</code>，<code>info</code>，<code>debug</code>，<code>trace</code>。这里使用SLF4J和logback来介绍常见用法。<a href="https://github.com/BitInit/learning/slf4j-test" target="_blank" rel="noopener">项目源码</a>，Maven依赖如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependencies&gt;</span><br><span class="line">  &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.slf4j&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;slf4j-api&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;1.7.25&lt;/version&gt;</span><br><span class="line">  &lt;/dependency&gt;</span><br><span class="line">  &lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;ch.qos.logback&lt;/groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;logback-classic&lt;/artifactId&gt;</span><br><span class="line">    &lt;version&gt;1.2.3&lt;/version&gt;</span><br><span class="line">  &lt;/dependency&gt;</span><br><span class="line">&lt;/dependencies&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="日志打印"><a href="#日志打印" class="headerlink" title="日志打印"></a>日志打印</h3><p>首先，来看一个简单的Hello World代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Logger logger = LoggerFactory.getLogger(<span class="string">"test"</span>);</span><br><span class="line">    logger.info(<span class="string">"Hello World"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果</span></span><br><span class="line"><span class="number">18</span>:<span class="number">12</span>:<span class="number">06.200</span> [main] INFO test - Hello World</span><br></pre></td></tr></table></figure>
+<p>SLF4J通过扫描classpath寻找SLF4J的实现（在1.7.25版本中是通过类查找机制，在2.0.0版本中使用的是SPI机制，下文分析源码时会详细说明），如果在Maven中没有添加<code>logback-classic</code>等任何实现依赖，这时，应用会打印：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SLF4J: Failed to load class &quot;org.slf4j.impl.StaticLoggerBinder&quot;.</span><br><span class="line">SLF4J: Defaulting to no-operation (NOP) logger implementation</span><br><span class="line">SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.</span><br></pre></td></tr></table></figure>
+<p>可以通过<code>{}</code>占位符来打印日志：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Logger logger = LoggerFactory.getLogger(<span class="string">"test"</span>);</span><br><span class="line">    String name = <span class="string">"john"</span>;</span><br><span class="line">    <span class="keyword">int</span> age = <span class="number">20</span>;</span><br><span class="line">    logger.info(<span class="string">"User name:&#123;&#125; age:&#123;&#125;"</span>, name, age);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果</span></span><br><span class="line"><span class="number">18</span>:<span class="number">18</span>:<span class="number">45.978</span> [main] INFO test - User name:john age:<span class="number">20</span></span><br></pre></td></tr></table></figure>
+<p>在<strong>SLF4J 2.0版本</strong>（现在2.0还是Snapshot）中，还支持通过编码来指定参数：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Logger logger = LoggerFactory.getLogger(<span class="string">"test"</span>);</span><br><span class="line">        String name = <span class="string">"john"</span>;</span><br><span class="line">        <span class="keyword">int</span> age = <span class="number">20</span>;</span><br><span class="line">        logger.atInfo().log(<span class="string">"User name:&#123;&#125; age:&#123;&#125;"</span>, name, age);</span><br><span class="line">        logger.atInfo().addArgument(name).addArgument(age).log(<span class="string">"User name:&#123;&#125; age:&#123;&#125;"</span>);</span><br><span class="line">        logger.atInfo().addArgument(name).log(<span class="string">"User name:&#123;&#125; age:&#123;&#125;"</span>, age);</span><br><span class="line">        logger.atInfo().addArgument(() -&gt; name).log(<span class="string">"User name:&#123;&#125; age:&#123;&#125;"</span>, age);</span><br><span class="line">&#125;</span><br><span class="line">    </span><br><span class="line"><span class="comment">// 结果</span></span><br><span class="line">[main] INFO test - User name:john age:<span class="number">20</span></span><br><span class="line">[main] INFO test - User name:john age:<span class="number">20</span></span><br><span class="line">[main] INFO test - User name:john age:<span class="number">20</span></span><br><span class="line">[main] INFO test - User name:john age:<span class="number">20</span></span><br></pre></td></tr></table></figure>
+<h3 id="Marker"><a href="#Marker" class="headerlink" title="Marker"></a>Marker</h3><p>Marker中文翻译“标记”、“记号”。在SLF4J中，可以理解成对某条或某些条日志添加一个记号，就相当于我们对每个博客或物品添加一些标签。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    Logger logger = LoggerFactory.getLogger(<span class="string">"test"</span>);</span><br><span class="line"></span><br><span class="line">    Marker notifyMarker = MarkerFactory.getMarker(<span class="string">"NOTIFY_ADMIN"</span>);</span><br><span class="line">    logger.error(notifyMarker, <span class="string">"notify admin &#123;&#125;"</span>, <span class="keyword">new</span> IllegalStateException(<span class="string">"system error"</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 结果</span></span><br><span class="line"><span class="number">18</span>:<span class="number">52</span>:<span class="number">47.010</span> [main] ERROR test - notify admin &#123;&#125;</span><br><span class="line">java.lang.IllegalStateException: system error</span><br><span class="line">	at site.bitinit.slf4j.MarkerTests.main(MarkerTests.java:<span class="number">18</span>)</span><br></pre></td></tr></table></figure>
+<p>根据<a href="https://stackoverflow.com/questions/4165558/best-practices-for-using-markers-in-slf4j-logback/10231016#10231016" target="_blank" rel="noopener">stackoverflow best-practices-for-using-markers-in-slf4j-logback</a>，Marker有两种作用：</p>
+<ol>
+<li>trigger：在<a href="http://logback.qos.ch/manual/appenders.html#OnMarkerEvaluator" target="_blank" rel="noopener">http://logback.qos.ch/manual/appenders.html#OnMarkerEvaluator</a>中详细描述了一个应用场景，当系统中出现某些日志，例如严重的系统错误时，系统应该向管理员报警。配置一个发送报警email的appender，当出现某个日志含有上例中notifyMarker时，就通过Email Appender向管理员发送一封邮件。</li>
+<li>filter：根据marker筛选日志。例如我只想在系统的console上打印含有上例中notifyMarker的日志，而其他日志我输出到文件中。</li>
+</ol>
+<h3 id="MDC"><a href="#MDC" class="headerlink" title="MDC"></a>MDC</h3><p>MDC 全称 Mapped Diagnostic Context，映射调试上下文。logback官网对MDC有详细的使用说明，这里就不过多说明了。<a href="http://logback.qos.ch/manual/mdc.html" target="_blank" rel="noopener">http://logback.qos.ch/manual/mdc.html</a></p>
+<h2 id="SLF4J源码解析"><a href="#SLF4J源码解析" class="headerlink" title="SLF4J源码解析"></a>SLF4J源码解析</h2><p>本节对SLF4J源码解析是基于SLF4J 1.7.25版本，源码下载地址 <a href="https://github.com/qos-ch/slf4j/archive/v_1.7.25.tar.gz" target="_blank" rel="noopener">github slf4j-1.7.25</a>。</p>
+<p><img src="http://image.55555.io/blog_slf4j_structure.png" alt="slf4j 源码结构图"></p>
+<p>上面SLF4J的源代码结构中有几个最重要的模块：<code>slf4j-api</code> 是 SLF4J 的核心模块，所有的日志抽象接口都放在这里面；<code>slf4j-simple</code> 是一种 SLF4J 日志规范的实现，类似于 logback、log4j； <code>slf4j-log4j12</code> 和 <code>slf4j-jdk14</code> 是通过适配器的方式使得 log4j 和 JDK logger 满足 SLF4J 日志规范，而 logback 是天生支持 SLF4J 规范，所以不再需要适配器。</p>
+<p>本节主要分析 <code>slf4j-api</code> 里的源码。</p>
+<p><img src="http://image.55555.io/blog_slf4j_api_structure.png" alt="slf4j-api"></p>
+<p>这里先提一下，包<code>org.slf4j.impl</code>下的类在 slf4j-api 打包成 jar 过程中会被过滤掉，具体原因会在下面说明。</p>
+<p>在 slf4j-api 中，最主要的几个抽象接口便是 <code>Logger.class</code>、<code>ILoggerFactory.class</code>、<code>Marker.class</code>、<code>IMarkerFactory.class</code>。</p>
+<p>首先看看 <code>Logger</code>和<code>Marker</code>抽象接口方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Logger</span> </span>&#123;</span><br><span class="line">	String ROOT_LOGGER_NAME = <span class="string">"ROOT"</span>;</span><br><span class="line">	<span class="function">String <span class="title">getName</span><span class="params">()</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">isTraceEnabled</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(String msg)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(String format, Object arg)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(String format, Object arg1, Object arg2)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(String format, Object... arguments)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(String msg, Throwable t)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">isTraceEnabled</span><span class="params">(Marker marker)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(Marker marker, String msg)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(Marker marker, String format, Object arg)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(Marker marker, String format, Object arg1, Object arg2)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(Marker marker, String format, Object... argArray)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">trace</span><span class="params">(Marker marker, String msg, Throwable t)</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 下面还有 debug、info、warn、error 相关方法，其方法定义形式和 trace 一样</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Marker</span> </span>&#123;</span><br><span class="line">	String ANY_MARKER = <span class="string">"*"</span>;</span><br><span class="line">	String ANY_NON_NULL_MARKER = <span class="string">"+"</span>;</span><br><span class="line">	<span class="function">String <span class="title">getName</span><span class="params">()</span></span>;</span><br><span class="line">	</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">add</span><span class="params">(Marker reference)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">remove</span><span class="params">(Marker reference)</span></span>;</span><br><span class="line">    <span class="comment">// 方法过时，被 hasReferences() 取代</span></span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">hasChildren</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">hasReferences</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function">Iterator&lt;Marker&gt; <span class="title">iterator</span><span class="params">()</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">contains</span><span class="params">(Marker other)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">contains</span><span class="params">(String name)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object o)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于 <code>Logger</code>和<code>Marker</code>都定义了一个工厂接口，用于创建<code>Logger</code>和<code>Marker</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">ILoggerFactory</span> </span>&#123;</span><br><span class="line">	<span class="function">Logger <span class="title">getLogger</span><span class="params">(String name)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">IMarkerFactory</span> </span>&#123;</span><br><span class="line">	<span class="function">Marker <span class="title">getMarker</span><span class="params">(String name)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">exists</span><span class="params">(String name)</span></span>;</span><br><span class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">detachMarker</span><span class="params">(String name)</span></span>;</span><br><span class="line">	<span class="function">Marker <span class="title">getDetachedMarker</span><span class="params">(String name)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>Logger</code>与<code>ILoggerFactory</code>、<code>Marker</code>与<code>IMarkerFactory</code>，这是典型的工厂方法设计模式的应用。如果用户要基于 slf4j 日志规范自己开发一个 logger，就需要实现 <code>Logger</code>和<code>ILoggerFactory</code>接口。</p>
+<blockquote>
+<p>在进行面向对象编程的时候，我们并不是一上来就去思考，如何将复杂的流程拆解为一个一个方法，而是采用曲线救国的策略，先去思考如何给业务建模，如何将需求翻译为类，如何给类之间建立交互关系，而完成这些工作完全不需要考虑错综复杂的处理流程。当我们有了类的设计之后，然后再像搭积木一样，按照处理流程，将类组装起来形成整个程序。这种开发模式、思考问题的方式，能让我们在应对复杂程序开发的时候，思路更加清晰。</p>
+</blockquote>
+<p>现在我们已经有了基本抽象接口，接下来就需要探究如何把这些抽象的接口和用户自定义接口实现按照某种规则组织起来，并且向 slf4j 使用者提供一个简单、清晰的 API。</p>
+<p>我们都知道，在使用 slf4j 时，我们是这样 <code>Logger logger = LoggerFactory.getLogger(HelloWorld.class)</code> 来获取一个 Logger 的，这儿 <code>LoggerFactory</code> 其实就是一个处理流程组装类，并为 slf4j 用户提供一个简单、清晰的API。它自动查找应用程序 classpath 中 <code>Logger</code> 和 <code>ILoggerFactory</code> 的实现，并初始化一个 <code>ILoggerFactory</code> 对象。</p>
+<p>接下来就来解析 <code>LoggerFactory.getLogger(String name)</code>的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Logger <span class="title">getLogger</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    ILoggerFactory iLoggerFactory = getILoggerFactory();</span><br><span class="line">    <span class="keyword">return</span> iLoggerFactory.getLogger(name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>通过调用 <code>getILoggerFactory()</code> 方法得到 <code>ILoggerFactory</code> 对象，<code>ILoggerFactory</code> 对象来获取 <code>Logger</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ILoggerFactory <span class="title">getILoggerFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (INITIALIZATION_STATE == UNINITIALIZED) &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (LoggerFactory.class) &#123;</span><br><span class="line">            <span class="keyword">if</span> (INITIALIZATION_STATE == UNINITIALIZED) &#123;</span><br><span class="line">                INITIALIZATION_STATE = ONGOING_INITIALIZATION;</span><br><span class="line">                performInitialization(); <span class="comment">// 1</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">switch</span> (INITIALIZATION_STATE) &#123;</span><br><span class="line">    <span class="keyword">case</span> SUCCESSFUL_INITIALIZATION:</span><br><span class="line">        <span class="keyword">return</span> StaticLoggerBinder.getSingleton().getLoggerFactory(); <span class="comment">// 2</span></span><br><span class="line">    <span class="keyword">case</span> NOP_FALLBACK_INITIALIZATION:</span><br><span class="line">        <span class="keyword">return</span> NOP_FALLBACK_FACTORY;</span><br><span class="line">    <span class="keyword">case</span> FAILED_INITIALIZATION:</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(UNSUCCESSFUL_INIT_MSG);</span><br><span class="line">    <span class="keyword">case</span> ONGOING_INITIALIZATION:</span><br><span class="line">        <span class="comment">// support re-entrant behavior.</span></span><br><span class="line">        <span class="comment">// See also http://jira.qos.ch/browse/SLF4J-97</span></span><br><span class="line">        <span class="keyword">return</span> SUBST_FACTORY;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Unreachable code"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这儿有2个重点(上面代码注释为1、2处)，1处是为了加载并初始化全局唯一的 <code>StaticLoggerBinder</code> 对象(使用的是单例模式中的饿汉模式)，<code>StaticLoggerBinder</code> 可以理解成是对 <code>ILoggerFactory</code> 的包装，<code>performInitialization()</code> 方法里面会调用 <code>build()</code> 来构建 <code>StaticLoggerBinder</code>。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">performInitialization</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    bind();</span><br><span class="line">    <span class="keyword">if</span> (INITIALIZATION_STATE == SUCCESSFUL_INITIALIZATION) &#123;</span><br><span class="line">        versionSanityCheck();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">bind</span><span class="params">()</span> </span>&#123;</span><br><span class="line">     <span class="comment">// 删除了异常处理等非核心代码</span></span><br><span class="line">    Set&lt;URL&gt; staticLoggerBinderPathSet = <span class="keyword">null</span>;</span><br><span class="line">    <span class="comment">// skip check under android, see also</span></span><br><span class="line">    <span class="comment">// http://jira.qos.ch/browse/SLF4J-328</span></span><br><span class="line">    <span class="keyword">if</span> (!isAndroid()) &#123;</span><br><span class="line">        <span class="comment">// 在classpath中查找 org/slf4j/impl/StaticLoggerBinder.class</span></span><br><span class="line">        staticLoggerBinderPathSet = findPossibleStaticLoggerBinderPathSet();</span><br><span class="line">        reportMultipleBindingAmbiguity(staticLoggerBinderPathSet);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// the next line does the binding</span></span><br><span class="line">    StaticLoggerBinder.getSingleton();</span><br><span class="line">    INITIALIZATION_STATE = SUCCESSFUL_INITIALIZATION;</span><br><span class="line">    reportActualBinding(staticLoggerBinderPathSet);</span><br><span class="line">    fixSubstituteLoggers();</span><br><span class="line">    replayEvents();</span><br><span class="line">    <span class="comment">// release all resources in SUBST_FACTORY</span></span><br><span class="line">    SUBST_FACTORY.clear();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在具体的 slf4j 日志规范的实现框架中(logback、slf4j-simple、slf4j-log4j)都会有 <code>org/slf4j/impl/StaticLoggerBinder.class</code> 类，该类一般会实现 <code>org.slf4j.ILoggerFactory.LoggerFactoryBinder</code> 接口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">LoggerFactoryBinder</span> </span>&#123;</span><br><span class="line">    <span class="function">ILoggerFactory <span class="title">getLoggerFactory</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">String <span class="title">getLoggerFactoryClassStr</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在进行类加载时，应用就会加载 logback 等框架里面的 <code>org/slf4j/impl/StaticLoggerBinder.class</code> 类，并且该类必须有一个 <code>public static final StaticLoggerBinder getSingleton()</code> 方法。在 slf4j-api 模块 <code>org.slf4j.impl</code> 包下也有一个 <code>StaticLoggerBinder</code> 类，该类主要是为了 slf4j-api 模块开发的便利，这也是为什么上文提到的把 slf4j-api 打包成 jar 包时会过滤掉该包下所有的类。在 slf4j 2.0.0版本中，是通过 SPI 机制来实现，个人认为 SPI 实现机制要比 <code>StaticLoggerBinder.class</code> 优雅很多。</p>
+<p>在 <code>build()</code> 方法中调用 <code>StaticLoggerBinder.getSingleton()</code> 就完成了 LoggerFactory 的绑定。根据 <code>StaticLoggerBinder</code> 就能得到 <code>ILoggerFactory</code> 单例对象。</p>
+<p><code>Marker</code> 的实现原理和 <code>Logger</code> 类似，这里就不过多赘述。下一节会通过具体的例子(slf4j-simple)来探究SLF4J的设计思想。</p>
+<h2 id="实现一个简易的SLF4J规范日志框架"><a href="#实现一个简易的SLF4J规范日志框架" class="headerlink" title="实现一个简易的SLF4J规范日志框架"></a>实现一个简易的SLF4J规范日志框架</h2><p>本节以 slf4j-simple 为原型来讨论的，并且只讨论 Logger 的实现，Marker 和 MDC 暂不讨论。</p>
+<p>如果要实现一个 slf4j 日志规范框架，首先需要对 <code>Logger</code> 接口和它的工厂 <code>ILoggerFactory</code> 接口实现。在 slf4j-simple 中，对应的实现类是 <code>SimpleLogger</code> 和 <code>SimpleLoggerFactory</code>。</p>
+<p><img src="http://image.55555.io/blog_slf4j_SimpleLogger.png" alt="SimpleLogger"></p>
+<p><code>MarkerIgnoringBase</code> 和 <code>NamedLoggerBase</code> 是 <code>org.slf4j.helpers</code> 包下的一些辅助类。<code>MarkerIgnoringBase</code> 为了方便子类忽略 Logger 中含有 Marker 的这些方法，<code>MarkerIgnoringBase</code> 中某个 trace 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">trace</span><span class="params">(Marker marker, String format, Object arg)</span> </span>&#123;</span><br><span class="line">    trace(format, arg);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>SimpleLoggerFactory</code> 是 <code>ILoggerFactory</code> 的实现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleLoggerFactory</span> <span class="keyword">implements</span> <span class="title">ILoggerFactory</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 存储所有的 Logger</span></span><br><span class="line">    ConcurrentMap&lt;String, Logger&gt; loggerMap;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SimpleLoggerFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        loggerMap = <span class="keyword">new</span> ConcurrentHashMap&lt;String, Logger&gt;();</span><br><span class="line">        <span class="comment">// SimpleLogger 中提供了一个静态初始化方法，为了初始化系统参数</span></span><br><span class="line">        SimpleLogger.lazyInit();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Return an appropriate &#123;<span class="doctag">@link</span> SimpleLogger&#125; instance by name.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Logger <span class="title">getLogger</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">        Logger simpleLogger = loggerMap.get(name);</span><br><span class="line">        <span class="keyword">if</span> (simpleLogger != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> simpleLogger;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            Logger newInstance = <span class="keyword">new</span> SimpleLogger(name);</span><br><span class="line">            Logger oldInstance = loggerMap.putIfAbsent(name, newInstance);</span><br><span class="line">            <span class="keyword">return</span> oldInstance == <span class="keyword">null</span> ? newInstance : oldInstance;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Clear the internal logger cache.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * This method is intended to be called by classes (in the same package) for</span></span><br><span class="line"><span class="comment">     * testing purposes. This method is internal. It can be modified, renamed or</span></span><br><span class="line"><span class="comment">     * removed at any time without notice.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * You are strongly discouraged from calling this method in production code.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">reset</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        loggerMap.clear();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在有了 <code>SimpleLogger</code> 和 <code>SimpleLoggerFactory</code> 类了，如何把这两个类组织起来为 slf4j 服务呢？这时就要用到上节提到的 <code>org.slf4j.impl.StaticLoggerBinder</code> 类了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">StaticLoggerBinder</span> <span class="keyword">implements</span> <span class="title">LoggerFactoryBinder</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 利用饿汉模式创建一个 StaticLoggerBinder 对象</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> StaticLoggerBinder SINGLETON = <span class="keyword">new</span> StaticLoggerBinder();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> StaticLoggerBinder <span class="title">getSingleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> SINGLETON;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Declare the version of the SLF4J API this implementation is compiled against. </span></span><br><span class="line"><span class="comment">     * The value of this field is modified with each major release. </span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="comment">// to avoid constant folding by the compiler, this field must *not* be final</span></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String REQUESTED_API_VERSION = <span class="string">"1.6.99"</span>; <span class="comment">// !final</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String loggerFactoryClassStr = SimpleLoggerFactory.class.getName();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ILoggerFactory loggerFactory;</span><br><span class="line">    <span class="comment">// 创建一个 LoggerFactory，该 LoggerFactory 的生命周期和 StaticLoggerBinder 单例对象一致</span></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">StaticLoggerBinder</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        loggerFactory = <span class="keyword">new</span> SimpleLoggerFactory();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ILoggerFactory <span class="title">getLoggerFactory</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> loggerFactory;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getLoggerFactoryClassStr</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> loggerFactoryClassStr;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当应用调用 <code>LoggerFactory.getLogger(HelloWorld.class)</code> 时，slf4j-api 会找到 slf4j-simple 里面的 <code>org.slf4j.impl.StaticLoggerBinder</code> 类，该 <code>StaticLoggerBinder</code> 类会实例化一个 <code>SimpleLoggerFactory</code> 对象，通过该工厂对象便可以得到或创建一个 <code>Logger</code> 对象。</p>
+<p>到现在为止，基本上已经完成了 slf4j 规范日志的实现，<code>Logger</code> 里面的方法，例如 <code>info(String msg)</code> 等就不讲述了。</p>
+<h2 id="SLF4J适配层"><a href="#SLF4J适配层" class="headerlink" title="SLF4J适配层"></a>SLF4J适配层</h2><p>在 <a href="http://www.slf4j.org/manual.html" target="_blank" rel="noopener">slf4j 用户手册中</a> 有这么一张图：</p>
+<p><img src="http://image.55555.io/blog_slf4j_adapter.png" alt="slf4j adapter"></p>
+<p>如果要使用 log4j 和 java.util.logging 作为 slf4j 的实现，就需要一个适配层，在 slf4j 的项目中，<code>slf4j-log4j12</code> 和 <code>slf4j-jdk14</code> 就是该适配层。其实该适配层的核心思想就是设计模式中的适配器模式。本节以 <code>slf4j-log4j12</code> 模块来说明。</p>
+<p><img src="http://image.55555.io/blog_slf4j_log4j_adapter.png" alt="slf4j-log4j12"></p>
+<p>其代码和 <code>slf4j-simle</code> 类似，对于 Logger 而言，核心类就是 <code>Log4jLoggerAdapter</code>、<code>Log4jLoggerFactory</code> 和 <code>StaticLoggerBinder</code> 三个。<code>Log4jLoggerFactory</code>、<code>StaticLoggerBinder</code> 和上节说的 <code>SimpleLoggerFactory</code>、<code>StaticLoggerBinder</code>基本一样。而 <code>Log4jLoggerAdapter</code> 就是一个适配器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">Log4jLoggerAdapter</span> <span class="keyword">extends</span> <span class="title">MarkerIgnoringBase</span> <span class="keyword">implements</span> <span class="title">LocationAwareLogger</span>, <span class="title">Serializable</span> </span>&#123;</span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">long</span> serialVersionUID = <span class="number">6182834493563598289L</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">transient</span> org.apache.log4j.Logger logger;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Following the pattern discussed in pages 162 through 168 of "The complete</span></span><br><span class="line"><span class="comment">     * log4j manual".</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">static</span> String FQCN = Log4jLoggerAdapter.class.getName();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Does the log4j version in use recognize the TRACE level?</span></span><br><span class="line">    <span class="comment">// The trace level was introduced in log4j 1.2.12.</span></span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">boolean</span> traceCapable;</span><br><span class="line">    </span><br><span class="line">    Log4jLoggerAdapter(org.apache.log4j.Logger logger) &#123;</span><br><span class="line">        <span class="keyword">this</span>.logger = logger;</span><br><span class="line">        <span class="keyword">this</span>.name = logger.getName();</span><br><span class="line">        traceCapable = isTraceCapable();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">isTraceCapable</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            logger.isTraceEnabled();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchMethodError e) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isTraceEnabled</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (traceCapable) &#123;</span><br><span class="line">            <span class="keyword">return</span> logger.isTraceEnabled();</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> logger.isDebugEnabled();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">trace</span><span class="params">(String msg)</span> </span>&#123;</span><br><span class="line">        logger.log(FQCN, traceCapable ? Level.TRACE : Level.DEBUG, msg, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 下面就是 Logger 中 trace/debug/info/warn/error 方法</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该 <code>Log4jLoggerAdapter</code> 就是使用<strong>组合 + 委托</strong>方式来适配 <code>Logger</code> 接口。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最近突发奇想看看 SLF4J 实现原理，整个思想体系不算复杂，从顶层看，SLF4J就是一种典型门面模式的应用，为了扩展性，定义了几个抽象接口，灵活应用工厂方法模式来实例化 <code>Logger</code>、<code>Marker</code>对象。<code>LoggerFactory</code> 需要获取 <code>ILoggerFactory</code> 的实现，在 SLF4J 1.7.25版本中使用的是 <code>StaticLoggerBinder</code> 类来初始化，个人感觉这种方式并不优雅，好在在 SLF4J 2.0.0版本中采用的是 SPI 机制，只需要通过配置文件来指导接口的实现类，这样不再需要维护一个 <code>StaticLoggerBinder</code> 类，简洁了很多。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/SLF4J/" rel="tag"># SLF4J</a>
+          
+            <a href="/tags/源码分析/" rel="tag"># 源码分析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/07/30/Dataflow模型/" rel="next" title="[转载]Dataflow模型">
+                <i class="fa fa-chevron-left"></i> [转载]Dataflow模型
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4" alt="John Wang">
+            
+              <p class="site-author-name" itemprop="name">John Wang</p>
+              <p class="site-description motion-element" itemprop="description">Stay hungry, Stay foolish.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">12</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">9</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">18</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/BitInit" target="_blank" title="GitHub" rel="external nofollow"><i class="fa fa-fw fa-github"></i>GitHub</a>
+                  
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:John.Wang.Bit@gmail.com" target="_blank" title="E-Mail" rel="external nofollow"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  
+                </span>
+              
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#SLF4J常见用法"><span class="nav-number">1.</span> <span class="nav-text">SLF4J常见用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#日志打印"><span class="nav-number">1.1.</span> <span class="nav-text">日志打印</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Marker"><span class="nav-number">1.2.</span> <span class="nav-text">Marker</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MDC"><span class="nav-number">1.3.</span> <span class="nav-text">MDC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SLF4J源码解析"><span class="nav-number">2.</span> <span class="nav-text">SLF4J源码解析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#实现一个简易的SLF4J规范日志框架"><span class="nav-number">3.</span> <span class="nav-text">实现一个简易的SLF4J规范日志框架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SLF4J适配层"><span class="nav-number">4.</span> <span class="nav-text">SLF4J适配层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Wang</span>
+
+  
+
+  
+</div>
+
+
+  
+
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" rel="external nofollow" href="https://hexo.io">Hexo</a> 强力驱动 v3.9.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 – <a class="theme-link" target="_blank" rel="external nofollow" href="https://theme-next.org">NexT.Gemini</a> v6.4.2</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+	
+    
+
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=6.4.2"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=6.4.2"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=6.4.2"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=6.4.2"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

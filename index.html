@@ -111,7 +111,7 @@
   <meta name="description" content="Stay hungry, Stay foolish.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="John&#39;s Blog">
-<meta property="og:url" content="http://blog.bitinit.site/index.html">
+<meta property="og:url" content="https://blog.bitinit.site/index.html">
 <meta property="og:site_name" content="John&#39;s Blog">
 <meta property="og:description" content="Stay hungry, Stay foolish.">
 <meta property="og:locale" content="zh-CN">
@@ -124,7 +124,7 @@
 
 
 
-  <link rel="canonical" href="http://blog.bitinit.site/">
+  <link rel="canonical" href="https://blog.bitinit.site/">
 
 
 
@@ -296,7 +296,192 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2019/07/30/Dataflow模型/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2020/02/06/open-source/SLF4J分析/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="John Wang">
+      <meta itemprop="description" content="Stay hungry, Stay foolish.">
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="John's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/02/06/open-source/SLF4J分析/" itemprop="url">
+                  Slf4j源码分析
+                </a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-06 16:53:45" itemprop="dateCreated datePublished" datetime="2020-02-06T16:53:45+08:00">2020-02-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-02-07 14:25:43" itemprop="dateModified" datetime="2020-02-07T14:25:43+08:00">2020-02-07</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/源码分析/" itemprop="url" rel="index"><span itemprop="name">源码分析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+          众所周知，SLF4J是非常流行的Java日志规范框架，使用门面模式来抽象日志接口，未提供具体的接口实现，通常需要配合log4j、logback等日志框架来使用。本文主要是为了研究SLF4J的源码，来剖析SLF4J的实现原理。
+文章以以下方式组织：
+
+SLF4J使用样例，结合logback来介绍一些常见用法；
+探究SLF4J抽象出来的几个主要接口及其实现原理；
+结合SLF4J抽象出来的接口，实现一个简单的日志框架（这里以slf4j-simple为例）；
+对于log4j框架，SLF4J需要一个适配层来使用log4j，探究该适配层如何实现。
+
+SLF4J常见用法在SLF4J中，将日志分为5个等级：error，warn，info，debug，trace。这里使用SLF4J和logback来介绍常见用法。项目源码，Maven依赖如下：
+123456789101112&lt;dependencies&
+          ...
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/02/06/open-source/SLF4J分析/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2019/07/30/Dataflow模型/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -476,184 +661,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2019/07/23/HashMap的那些事/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Wang">
-      <meta itemprop="description" content="Stay hungry, Stay foolish.">
-      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="John's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/07/23/HashMap的那些事/" itemprop="url">
-                  HashMap的那些事
-                </a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-07-23 17:05:19" itemprop="dateCreated datePublished" datetime="2019-07-23T17:05:19+08:00">2019-07-23</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-09 20:40:51" itemprop="dateModified" datetime="2019-08-09T20:40:51+08:00">2019-08-09</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-          待续…..
-
-          
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/07/23/HashMap的那些事/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2018/12/26/Unix套接字编程总结/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2018/12/26/Unix套接字编程总结/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -880,7 +888,7 @@ IPv4地址，
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2018/10/28/Preconditions/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2018/10/28/guava/Preconditions/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -899,7 +907,7 @@ IPv4地址，
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/10/28/Preconditions/" itemprop="url">
+                <a class="post-title-link" href="/2018/10/28/guava/Preconditions/" itemprop="url">
                   Preconditions
                 </a>
               
@@ -1012,7 +1020,7 @@ Tips: 静态方式引入是指在类中以import static xx引入类
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/10/28/Preconditions/#more" rel="contents">
+            <a class="btn" href="/2018/10/28/guava/Preconditions/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1068,7 +1076,7 @@ Tips: 静态方式引入是指在类中以import static xx引入类
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2018/10/21/UsingAndAvoidingNullExplained/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2018/10/21/guava/UsingAndAvoidingNullExplained/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -1087,7 +1095,7 @@ Tips: 静态方式引入是指在类中以import static xx引入类
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/10/21/UsingAndAvoidingNullExplained/" itemprop="url">
+                <a class="post-title-link" href="/2018/10/21/guava/UsingAndAvoidingNullExplained/" itemprop="url">
                   Using and avoiding null
                 </a>
               
@@ -1195,7 +1203,7 @@ Tips: 静态方式引入是指在类中以import static xx引入类
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/10/21/UsingAndAvoidingNullExplained/#more" rel="contents">
+            <a class="btn" href="/2018/10/21/guava/UsingAndAvoidingNullExplained/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1251,7 +1259,7 @@ Tips: 静态方式引入是指在类中以import static xx引入类
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2018/10/21/guava目录/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2018/10/21/guava/guava目录/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -1270,7 +1278,7 @@ Tips: 静态方式引入是指在类中以import static xx引入类
         
           <h2 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2018/10/21/guava目录/" itemprop="url">
+                <a class="post-title-link" href="/2018/10/21/guava/guava目录/" itemprop="url">
                   guava 文档目录
                 </a>
               
@@ -1378,7 +1386,7 @@ Throwables：简化了异常和错误的传播与检查
           ...
           <!--noindex-->
           <div class="post-button text-center">
-            <a class="btn" href="/2018/10/21/guava目录/#more" rel="contents">
+            <a class="btn" href="/2018/10/21/guava/guava目录/#more" rel="contents">
               阅读全文 &raquo;
             </a>
           </div>
@@ -1434,7 +1442,7 @@ Throwables：简化了异常和错误的传播与检查
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2017/07/23/转载-MySQL索引背后的数据结构及算法原理/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2017/07/23/转载-MySQL索引背后的数据结构及算法原理/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -1611,7 +1619,7 @@ Throwables：简化了异常和错误的传播与检查
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2017/06/29/转载-如何选择开源许可证？/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2017/06/29/转载-如何选择开源许可证？/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -1793,7 +1801,7 @@ Throwables：简化了异常和错误的传播与检查
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2016/12/02/转载-设计模式六大原则/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2016/12/02/转载-设计模式六大原则/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -1972,7 +1980,7 @@ Throwables：简化了异常和错误的传播与检查
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://blog.bitinit.site/2016/10/06/转载-数字证书及CA的扫盲介绍/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2016/10/06/转载-数字证书及CA的扫盲介绍/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -2269,7 +2277,9 @@ Throwables：简化了异常和错误的传播与检查
                     
                       
                     
-                    <span class="site-state-item-count">17</span>
+                      
+                    
+                    <span class="site-state-item-count">18</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -2323,7 +2333,7 @@ Throwables：简化了异常和错误的传播与检查
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; 2016 – <span itemprop="copyrightYear">2020</span>
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
