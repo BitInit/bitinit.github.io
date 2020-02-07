@@ -1849,7 +1849,7 @@ pre .javascript .function {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #e224ff;
+  background: #6b7975;
 }
 .links-of-blogroll {
   font-size: 13px;
@@ -3103,7 +3103,7 @@ ul.breadcrumb li+li:last-child {
 }
 @media screen and (min-width: 900px) {
   body {
-    background-image: url("/images/bg.jpg");
+    background-image: url("http://image.55555.io/blog_bg.jpg");
     background-repeat: no-repeat;
     background-attachment: fixed;
     background-position: 50% 50%;
