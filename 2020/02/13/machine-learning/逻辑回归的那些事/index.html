@@ -108,23 +108,27 @@
 
 
 
-  <meta name="description" content="Stay hungry, Stay foolish.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="John&#39;s Blog">
-<meta property="og:url" content="https://blog.bitinit.site/page/2/index.html">
+  <meta name="description" content="本文是笔者学习逻辑回归算法后的总结，是笔者自己对逻辑回归算法的感悟，可能有不当之处。如有疑问，欢迎提 issue。 本文主要内容是对逻辑回归算法中代价函数(也叫损失函数，本文统一使用代价函数这词)的形成原理和梯度下降算法公式推导进行讨论，不涉及逻辑回归算法的介绍和如何使用，所以需要读者知道逻辑回归算法是什么、有什么用和怎么用。 写在前面本文公式和符号采用吴恩达教授的机器学习课程中的表达方式。以肿瘤">
+<meta name="keywords" content="逻辑回归,机器学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="逻辑回归的那些事">
+<meta property="og:url" content="https://blog.bitinit.site/2020/02/13/machine-learning/逻辑回归的那些事/index.html">
 <meta property="og:site_name" content="John&#39;s Blog">
-<meta property="og:description" content="Stay hungry, Stay foolish.">
+<meta property="og:description" content="本文是笔者学习逻辑回归算法后的总结，是笔者自己对逻辑回归算法的感悟，可能有不当之处。如有疑问，欢迎提 issue。 本文主要内容是对逻辑回归算法中代价函数(也叫损失函数，本文统一使用代价函数这词)的形成原理和梯度下降算法公式推导进行讨论，不涉及逻辑回归算法的介绍和如何使用，所以需要读者知道逻辑回归算法是什么、有什么用和怎么用。 写在前面本文公式和符号采用吴恩达教授的机器学习课程中的表达方式。以肿瘤">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://image.55555.io/blog_logistic_theta.png">
+<meta property="og:updated_time" content="2020-02-13T10:22:26.021Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="John&#39;s Blog">
-<meta name="twitter:description" content="Stay hungry, Stay foolish.">
+<meta name="twitter:title" content="逻辑回归的那些事">
+<meta name="twitter:description" content="本文是笔者学习逻辑回归算法后的总结，是笔者自己对逻辑回归算法的感悟，可能有不当之处。如有疑问，欢迎提 issue。 本文主要内容是对逻辑回归算法中代价函数(也叫损失函数，本文统一使用代价函数这词)的形成原理和梯度下降算法公式推导进行讨论，不涉及逻辑回归算法的介绍和如何使用，所以需要读者知道逻辑回归算法是什么、有什么用和怎么用。 写在前面本文公式和符号采用吴恩达教授的机器学习课程中的表达方式。以肿瘤">
+<meta name="twitter:image" content="http://image.55555.io/blog_logistic_theta.png">
 
 
 
 
 
 
-  <link rel="canonical" href="https://blog.bitinit.site/page/2/">
+  <link rel="canonical" href="https://blog.bitinit.site/2020/02/13/machine-learning/逻辑回归的那些事/">
 
 
 
@@ -134,7 +138,7 @@
   };
 </script>
 
-  <title>John's Blog</title>
+  <title>逻辑回归的那些事 | John's Blog</title>
   
 
 
@@ -181,8 +185,7 @@
     
   
 
-  <div class="container sidebar-position-always 
-  page-home">
+  <div class="container sidebar-position-always page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -279,9 +282,9 @@
           
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -296,7 +299,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2016/10/06/转载-数字证书及CA的扫盲介绍/">
+    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2020/02/13/machine-learning/逻辑回归的那些事/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
@@ -313,11 +316,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/10/06/转载-数字证书及CA的扫盲介绍/" itemprop="url">
-                  [转载]数字证书及CA的扫盲介绍
-                </a>
+          <h2 class="post-title" itemprop="name headline">逻辑回归的那些事
               
             
           </h2>
@@ -342,24 +341,12 @@
                 
               
 
-              <time title="创建时间：2016-10-06 16:39:06" itemprop="dateCreated datePublished" datetime="2016-10-06T16:39:06+08:00">2016-10-06</time>
+              <time title="创建时间：2020-02-13 13:42:49 / 修改时间：18:22:26" itemprop="dateCreated datePublished" datetime="2020-02-13T13:42:49+08:00">2020-02-13</time>
             
 
             
               
 
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-09 20:40:51" itemprop="dateModified" datetime="2019-08-09T20:40:51+08:00">2019-08-09</time>
               
             
           </span>
@@ -376,7 +363,7 @@
                 <span class="post-meta-item-text">分类于</span>
               
               
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/信息安全/" itemprop="url" rel="index"><span itemprop="name">信息安全</span></a></span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/机器学习/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a></span>
 
                 
                 
@@ -410,27 +397,72 @@
       
 
       
-        
-          
-          很久以前，就开始关注编程随想（需翻墙）的技术博客，真真切切的学到了许多东西。今天，从新整理了下以前学的知识，忍不住转载了这篇好文。作者：编程随想，地址：数字证书及 CA 的扫盲介绍
-目录
-★先说一个通俗的例子
-★相关专业术语的解释
-★证书有啥用？
-★总结
-  最近1-2周，关于 CNNIC 的 CA 证书问题，网上搞得沸沸扬扬。但是俺发觉，即使是一些 IT 行业的技术人员，也搞不太明白该问题的严重性（至于不懂技术的傻瓜用户，就更甭提了）。主要在于 CA 证书是一个相对专业的东东，大伙儿平时接触不多。  所以，俺打算写3个帖子：第1个用来扫盲 CA 证书的基础知识（也就是本帖）；第2个则用来揭露 CNNIC 这个老流氓的丑恶历史（在“这里”）；第3个介绍如何 CNNIC 证书的危害及清除方法（在“这里”）。为了达到普及的效果，俺会尽量用比较浅显，非技术的语言来讲清楚这事儿。
+        <p>本文是笔者学习逻辑回归算法后的总结，是笔者自己对逻辑回归算法的感悟，可能有不当之处。如有疑问，欢迎提 <a href="https://github.com/BitInit/bitinit.github.io/issues" target="_blank" rel="noopener">issue</a>。</p>
+<p>本文主要内容是对逻辑回归算法中代价函数(也叫损失函数，本文统一使用代价函数这词)的形成原理和梯度下降算法公式推导进行讨论，不涉及逻辑回归算法的介绍和如何使用，所以需要读者知道逻辑回归算法是什么、有什么用和怎么用。</p>
+<h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>本文公式和符号采用<a href="https://www.coursera.org/learn/machine-learning" target="_blank" rel="noopener">吴恩达教授的机器学习课程</a>中的表达方式。以肿瘤预测为研究例子，有 m 个数据作为训练集，分别是 {$(x^{(1)}, y^{(1)}), (x^{(2)}, y^{(2)}), (x^{(3)}, y^{(3)}), (x^{(4)}, y^{(4)}),,,(x^{(m - 1)}, y^{(m - 1)}), (x^{(m)}, y^{(m)})$}，其中 x 表示肿瘤的大小，x 的上标 i 表示第 i 个数据；y 的值为 0或1，0表示是良性肿瘤，1表示是恶性肿瘤。数据集样例如下：</p>
+<table>
+<thead>
+<tr>
+<th>x (肿瘤大小)</th>
+<th>y (是否是恶性)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$x^{(1)}$</td>
+<td>1</td>
+</tr>
+<tr>
+<td>$x^{(2)}$</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$x^{(3)}$</td>
+<td>0</td>
+</tr>
+<tr>
+<td>$x^{(4)}$</td>
+<td>1</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr>
+<td>$x^{(m - 1)}$</td>
+<td>1</td>
+</tr>
+<tr>
+<td>$x^{(m)}$</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<h2 id="代价函数"><a href="#代价函数" class="headerlink" title="代价函数"></a>代价函数</h2><p>对于上节肿瘤预测例子，假设我们有一个函数 $f(x)$，该函数表示为：肿瘤大小为 $x$，它是恶性肿瘤的概率，用概率论的表述就是 $f(x) = P(y = 1 | x)$。</p>
+<p>m 个测试数据集，那么我们令 $L$：</p>
+<p>$$<br>L = f(x^{(1)})(1 - f(x^{(2)}))(1 - f(x^{(3)}))f(x^{(4)})…(1 - f(x^{(m - 1)}))f(x^{(m)})<br>$$</p>
+<p>上述 $L$ 中，$f(x^{(2)})$表示：肿瘤大小为 $x^{(2)}$ 时，为<strong>恶性</strong>肿瘤的概率，但是在训练数据集中当 $x$ 为 $x^{(2)}$ 时，$y == 0$。所以 $1 - f(x^{(2)})$表示：肿瘤大小为 $x^{(2)}$ 时，为<strong>良性</strong>肿瘤的概率。现在可以看出 $L$ 的含义了，通过预测函数$f(x)$，生成训练集相同结果的概率。即$L$表示：有 m 个数据$x^{(1)}$、$x^{(2)}$、$x^{(3)}$…$x^{(m - 1)}$、$x^{(m)}$，我有一个预测函数$f(x)$，通过该预测函数 $f(x)$，使得肿瘤大小为$x^{(1)}$时预测为恶性肿瘤、$x^{(2)}$时预测为良性肿瘤、$x^{(3)}$时预测为良性肿瘤、…、$x^{(m - 1)}$时预测为恶性肿瘤、$x^{(m)}$时预测为良性肿瘤的概率。</p>
+<p>有了上述的 $L$，现在我们可以来讨论 $f(x)$ 了，我们希望找到一个非常理想的 $f(x)$ 函数使得 $L$的值最大，最理想情况就是 $L$ 等于 1（当然这样会过拟合训练数据，我们这里不讨论过拟合）。这时我们的目标变成通过机器学习方法，使用训练数据集找到一个函数 $f(x)$，使得 $L$ 值最大。</p>
+<p>通过 $f(x)$ 函数得到的 $L(f(x))$ 函数在寻找最大值是非常困难的，因为 $L(f(x))$ 函数图形是不能确定的，所以我们需要一种数学变换将 $L(f(x))$ 函数变成方便计算的函数，即把 $L(f(x))$ 变成<a href="https://baike.baidu.com/item/%E5%87%B8%E5%87%BD%E6%95%B0/3371735?fr=aladdin" target="_blank" rel="noopener">凸函数</a>，这里通过 $log$ 把 $L$ 转换成凸函数。</p>
+<p>$$<br>J = -\frac{1}{m}log(L)<br>$$</p>
+<p>式子中的 $J$ 就是逻辑回归中的<strong>代价函数</strong>，加上一个负号就把寻找 $L$ 最大值转换成寻找 $J$ 的最小值。$J$ 的完整表示：</p>
+<p>$$<br>J = -\frac{1}{m}log[f(x^{(1)})(1 - f(x^{(2)}))(1 - f(x^{(3)}))f(x^{(4)})…(1 - f(x^{(m - 1)}))f(x^{(m)})]<br>$$</p>
+<p>再变换一下：</p>
+<p>$$<br>J = -\frac{1}{m}[log(f(x^{(1)})) + log(1 - f(x^{(2)})) + log(1 - f(x^{(3)})) … - log(1 - f(x^{(m - 1)})) + log(f(x^{(m)}))]<br>$$</p>
+<p>式子中的 $log(f(x^{(1)}))$ 可以写成 $1 * log(f(x^{(1)})) + (1 - 1) * log(1-f(x^{(1)}))$，而 $log(1 - f(x^{(2)}))$ 可以写成 $0 * log(1 - f(x^{(2)})) + (1 - 0) * log(1 - f(x^{(2)}))$</p>
+<p>$x^{(3)}$、$x^{(4)}$、…、$x^{(m)}$ 同理，即可得到统一表示方式：</p>
+<p>$$<br>y^{(i)} * log(f(x^{(i)})) + (1 - y^{(i)}) * log(1 - f(x^{(i)}))<br>$$</p>
+<p>这时，代价函数 $J$ 变成：</p>
+<p>$$<br>J = -\frac{1}{m}\sum_{i = 1}^{m}[y^{(i)} * log(f(x^{(i)})) + (1 - y^{(i)}) * log(1 - f(x^{(i)}))]<br>$$</p>
+<p>以此得到我们熟悉的代价函数公式。</p>
+<h2 id="梯度下降算法"><a href="#梯度下降算法" class="headerlink" title="梯度下降算法"></a>梯度下降算法</h2><p>上节所说的 $f(x)$ 就是机器学习术语中的<strong>假设函数</strong>，在<a href="https://www.coursera.org/learn/machine-learning" target="_blank" rel="noopener">吴恩达教授的机器学习课程</a>中是用 $h_{\theta}(x)$ 表示。为了与课程统一，所以我们还是按照课程来定义函数：</p>
+<p>$$<br>J(\theta) = -\frac{1}{m}\sum_{i = 1}^{m}[y^{(i)} * log(h_{\theta}(x)) + (1 - y^{(i)}) * log(1 - h_{\theta}(x))]<br>$$</p>
+<p>其中 $h_{\theta}(x^{(i)}) = \frac{1}{1 + e^{-\theta^{T}x^{(i)}}}$</p>
+<p>当进行梯度下降计算时，需要计算 $J(\theta)$ 对 $\theta$ 的偏导，偏导结论如下：</p>
+<p>$$<br>\frac{\delta}{\delta\theta_{j}}J(\theta) = \frac{1}{m}\sum_{i = 1}^{m}[h_{\theta}(x^{(i)}) - y^{(i)}]x_{j}^{(i)}<br>$$</p>
+<p>推导过程如下：</p>
+<p><img src="http://image.55555.io/blog_logistic_theta.png" alt="推导"></p>
 
-
-★先说一个通
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/10/06/转载-数字证书及CA的扫盲介绍/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
       
     </div>
 
@@ -448,374 +480,38 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2016/08/29/转载-如何成为一名黑客/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Wang">
-      <meta itemprop="description" content="Stay hungry, Stay foolish.">
-      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="John's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/08/29/转载-如何成为一名黑客/" itemprop="url">
-                  [转载]如何成为一名黑客
-                </a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2016-08-29 18:55:54" itemprop="dateCreated datePublished" datetime="2016-08-29T18:55:54+08:00">2016-08-29</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-09 20:40:51" itemprop="dateModified" datetime="2019-08-09T20:40:51+08:00">2019-08-09</time>
-              
-            
-          </span>
-
+        <div class="post-tags">
           
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/思考/" itemprop="url" rel="index"><span itemprop="name">思考</span></a></span>
-
-                
-                
-              
-            </span>
+            <a href="/tags/逻辑回归/" rel="tag"># 逻辑回归</a>
           
-
+            <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
+      
 
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
+      
       
       
 
       
-        
-          
-          刚上大学时，看到了这篇文章，到现在都还久久不能忘记。
-为什么会有这份文档?作为 Jargon File（译注：黑客行话大全）的编辑和几份其他类似性质知名文章的作者，我经常收到充满热情的网络新手的电子邮件询问：“我如何才能成为一名出色的 Hacker？”早在 1996 年，我注意到网上似乎没有任何的 FAQ 或者 Web 形式的文档提到及这个至关重要的问题，因此我写了这份文档。现在，很多 Hacker 都认为这是一篇权威性文档，那我也姑且这么认为吧。不过，我不认为我是这个话题的绝对权威；如果你不喜欢这篇文档，你也可以自己写一份。
-如果你读到的是这份文档的离线拷贝，你可以在 http://catb.org/~esr/faqs/hacker-howto.html 读到最新版本。
-装饰本文的“五点九宫格”图像被称作“glider”，在一种叫做 Life 的数学模型中，这个简单的样本有一些异乎寻常的
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/08/29/转载-如何成为一名黑客/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/02/06/open-source/SLF4J分析/" rel="next" title="Slf4j源码分析">
+                <i class="fa fa-chevron-left"></i> Slf4j源码分析
+              </a>
+            
           </div>
-          <!--/noindex-->
-        
-      
-    </div>
 
-    
+          <span class="post-nav-divider"></span>
 
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://blog.bitinit.site/2016/08/24/转载-Web研发模式演变史/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="John Wang">
-      <meta itemprop="description" content="Stay hungry, Stay foolish.">
-      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="John's Blog">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2016/08/24/转载-Web研发模式演变史/" itemprop="url">
-                  [转载]Web研发模式演变史
-                </a>
-              
+          <div class="post-nav-prev post-nav-item">
             
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2016-08-24 10:59:02" itemprop="dateCreated datePublished" datetime="2016-08-24T10:59:02+08:00">2016-08-24</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-08-09 20:40:51" itemprop="dateModified" datetime="2019-08-09T20:40:51+08:00">2019-08-09</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/软件工程/" itemprop="url" rel="index"><span itemprop="name">软件工程</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+          </div>
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-          简单明快的早期时代
-可称之为 Web 1.0 时代，非常适合创业型小项目，不分前后端，经常 3-5 人搞定所有开发。页面由 JSP、PHP 等工程师在服务端生成，浏览器负责展现。基本上是服务端给什么浏览器就展现什么，展现的控制在 Web Server 层。
-这种模式的好处是：简单明快，本地起一个 Tomcat 或 Apache 就能开发，调试什么的都还好，只要业务不太复杂。
-然而业务总会变复杂，这是好事情，否则很可能就意味着创业失败了。业务的复杂会让 Service 越来越多，参与开发的人员也很可能从几个人快速扩招到几十人。在这种情况下，会遇到一些典型问题：
-
-Service 越来越多，调用关系变复杂，前端搭建本地环境不再是一件简单的事。考虑团队协作，往往会考虑搭建集中式的开发服务器来解决。这种解决方案对编译型的后端开发来说也许还好，但对前端开发来说并不友好。天哪，我只是想调整下按钮样式，
-          ...
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2016/08/24/转载-Web研发模式演变史/#more" rel="contents">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -825,18 +521,15 @@ Service 越来越多，调用关系变复杂，前端搭建本地环境不再是
   </article>
 
 
-    
-  </section>
-
-  
-  <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
-  </nav>
-
+  </div>
 
 
           </div>
           
+
+  
+
+
 
         </div>
         
@@ -857,8 +550,17 @@ Service 越来越多，调用关系变复杂，前端搭建本地环境不再是
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -1002,6 +704,22 @@ Service 越来越多，调用关系变复杂，前端搭建本地环境不再是
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代价函数"><span class="nav-number">2.</span> <span class="nav-text">代价函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#梯度下降算法"><span class="nav-number">3.</span> <span class="nav-text">梯度下降算法</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -1140,6 +858,10 @@ Service 越来越多，调用关系变复杂，前端搭建本地环境不再是
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=6.4.2"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=6.4.2"></script>
+
+
 
   
 
@@ -1180,15 +902,31 @@ Service 越来越多，调用关系变复杂，前端搭建本地环境不再是
 
   
   
-    
-      
-    
-      
-    
-      
-    
-  
 
+  
+    
+      <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      TeX: {equationNumbers: { autoNumber: "AMS" }}
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<script type="text/javascript" src="//cdn.jsdelivr.net/npm/mathjax@2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+    
   
 
 
