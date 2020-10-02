@@ -117,7 +117,7 @@
 <meta property="og:description" content="本文是笔者学习逻辑回归算法后的总结，是笔者自己对逻辑回归算法的感悟，可能有不当之处。如有疑问，欢迎提 issue。 本文主要内容是对逻辑回归算法中代价函数(也叫损失函数，本文统一使用代价函数这词)的形成原理和梯度下降算法公式推导进行讨论，不涉及逻辑回归算法的介绍和如何使用，所以需要读者知道逻辑回归算法是什么、有什么用和怎么用。 写在前面本文公式和符号采用吴恩达教授的机器学习课程中的表达方式。以肿瘤">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://image.55555.io/blog_logistic_theta.png">
-<meta property="og:updated_time" content="2020-02-13T10:22:26.021Z">
+<meta property="og:updated_time" content="2020-10-02T02:07:16.646Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="逻辑回归的那些事">
 <meta name="twitter:description" content="本文是笔者学习逻辑回归算法后的总结，是笔者自己对逻辑回归算法的感悟，可能有不当之处。如有疑问，欢迎提 issue。 本文主要内容是对逻辑回归算法中代价函数(也叫损失函数，本文统一使用代价函数这词)的形成原理和梯度下降算法公式推导进行讨论，不涉及逻辑回归算法的介绍和如何使用，所以需要读者知道逻辑回归算法是什么、有什么用和怎么用。 写在前面本文公式和符号采用吴恩达教授的机器学习课程中的表达方式。以肿瘤">
@@ -303,7 +303,7 @@
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="John Wang">
-      <meta itemprop="description" content="Stay hungry, Stay foolish.">
+      <meta itemprop="description" content="Reading makes a full man, conference a ready man, and writing an exact man.">
       <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4">
     </span>
 
@@ -341,12 +341,24 @@
                 
               
 
-              <time title="创建时间：2020-02-13 13:42:49 / 修改时间：18:22:26" itemprop="dateCreated datePublished" datetime="2020-02-13T13:42:49+08:00">2020-02-13</time>
+              <time title="创建时间：2020-02-13 13:42:49" itemprop="dateCreated datePublished" datetime="2020-02-13T13:42:49+08:00">2020-02-13</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2020-10-02 10:07:16" itemprop="dateModified" datetime="2020-10-02T10:07:16+08:00">2020-10-02</time>
               
             
           </span>
@@ -462,6 +474,9 @@
 <p>$$<br>\frac{\delta}{\delta\theta_{j}}J(\theta) = \frac{1}{m}\sum_{i = 1}^{m}[h_{\theta}(x^{(i)}) - y^{(i)}]x_{j}^{(i)}<br>$$</p>
 <p>推导过程如下：</p>
 <p><img src="http://image.55555.io/blog_logistic_theta.png" alt="推导"></p>
+<h2 id="扩展阅读"><a href="#扩展阅读" class="headerlink" title="扩展阅读"></a>扩展阅读</h2><ul>
+<li><a href="http://colah.github.io/posts/2015-08-Backprop/" target="_blank" rel="noopener">Calculus on Computational Graphs: Backpropagation</a></li>
+</ul>
 
       
     </div>
@@ -567,7 +582,7 @@
               <img class="site-author-image" itemprop="image" src="https://avatars3.githubusercontent.com/u/12962110?s=400&u=baf9a8a4fb4d432a56035d96fbc66ee0ea6d524c&v=4" alt="John Wang">
             
               <p class="site-author-name" itemprop="name">John Wang</p>
-              <p class="site-description motion-element" itemprop="description">Stay hungry, Stay foolish.</p>
+              <p class="site-description motion-element" itemprop="description">Reading makes a full man, conference a ready man, and writing an exact man.</p>
           </div>
 
           
@@ -663,6 +678,8 @@
                     
                       
                     
+                      
+                    
                     <span class="site-state-item-count">20</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
@@ -713,7 +730,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代价函数"><span class="nav-number">2.</span> <span class="nav-text">代价函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#梯度下降算法"><span class="nav-number">3.</span> <span class="nav-text">梯度下降算法</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#写在前面"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代价函数"><span class="nav-number">2.</span> <span class="nav-text">代价函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#梯度下降算法"><span class="nav-number">3.</span> <span class="nav-text">梯度下降算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#扩展阅读"><span class="nav-number">4.</span> <span class="nav-text">扩展阅读</span></a></li></ol></div>
             
 
           </div>
